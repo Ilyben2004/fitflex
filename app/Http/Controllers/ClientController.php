@@ -16,35 +16,31 @@ class ClientController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'first_name'=>'required',
-            
-            'date_birth'=>'required',
-            'phone_number'=>'required',
-            'end_date'=>'required',
-            'picture_file'=>'sometimes|required',
-            'id_gym'=>'sometimes|required'
+{
+    $request->validate([
+        'first_name' => 'required',
+        'date_birth' => 'required',
+        'phone_number' => 'required',
+        'end_date' => 'required',
+        'picture_file' => 'sometimes|required',
+        'id_user' => 'sometimes|required'
+    ]);
 
-            
+    $user = User::findOrFail($request->id_user);
+    $gym = $user->gym;
 
+    // Modify the request data
+    $requestData = $request->all();
+    $requestData['id_gym'] = $gym->id;
+    unset($requestData['id_user']);
 
+    Client::create($requestData);
 
+    return response()->json([
+        'message' => 'Client added successfully'
+    ]);
+}
 
-        ]);
-
-       
-        Client::create($request->post());
-        return response()->json([
-            'message'=>'Client added successfully'
-        ]);
-    }
-    public function show(Client $client)
-    {
-        return response()->json([
-            'client' => $client
-        ]);
-    }
 
     public function update(Request $request, Client $client)
     {
@@ -61,6 +57,7 @@ class ClientController extends Controller
 
 
         ]);
+
  
 
         $client->fill($request->post())->update();
@@ -125,5 +122,28 @@ class ClientController extends Controller
         }
         
 
-   
+        public function getClientPayments($idClient)
+        {
+            try {
+                // Find the client by id
+                $client = Client::findOrFail($idClient);
+        
+                // Load payments eagerly to optimize querying
+                $payments = $client->payments()->orderBy('id', 'desc')->get();
+
+        
+                // Return the payments and optional metadata as a JSON response
+                return response()->json([
+                    'payments' => $payments,
+                    'total_count' => $payments->count(), // Optional metadata
+                ], 200);
+            } catch (\Exception $e) {
+                // Return an error message as a JSON response if an exception occurs
+                return response()->json([
+                    'error' => 'Client not found or other error occurred',
+                    'message' => $e->getMessage(),
+                ], 404);
+            }
+        }
+        
 }

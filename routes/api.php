@@ -6,6 +6,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\PaymentController;
+
+
 
 
 
@@ -31,8 +34,9 @@ Route::post('/login', [AuthController::class, 'login']);
 // We use auth api here as a middleware so only authenticated user who can access the endpoint
 // We use group so we can apply middleware auth api to all the routes within the group
 Route::middleware('auth:api')->group(function() {
-    Route::get('/me', [UserController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/userToken', [UserController::class, 'getUserData']);
+
 });
 
 
@@ -41,6 +45,12 @@ Route::resource('client',ClientController::class);
 Route::post('client/disactivate/{idClient}', [ClientController::class, 'stopClientSub']);
 Route::post('client/activate/{idClient}', [ClientController::class, 'activeClientSub']);
 Route::get('client/bygym/{idUser}', [ClientController::class, 'getClientsByGym']);
+Route::get('client/payments/{idClient}', [ClientController::class, 'getClientPayments']);
+Route::resource('payment',PaymentController::class);
+Route::get('payment/gym/{idUser}',[PaymentController::class,'getPaymentsByGym']);
+
+
+
 
 
 

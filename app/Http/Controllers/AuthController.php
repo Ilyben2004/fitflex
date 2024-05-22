@@ -105,7 +105,7 @@ public function login(Request $request)
             'meta' => [
                 'code' => 200,
                 'status' => 'success',
-                'message' => 'Quote fetched successfully.',
+                'message' => 'Login successful.',
             ],
             'data' => [
                 'user' => auth()->user(),
@@ -116,6 +116,15 @@ public function login(Request $request)
                 ],
             ],
         ]);
+    }
+    else{
+        return response()->json([
+            'meta' => [
+                'code' => 401,
+                'status' => 'error',
+                'message' => 'User not found or incorrect credentials.',
+            ],
+        ], 401);
     }
 }
 
