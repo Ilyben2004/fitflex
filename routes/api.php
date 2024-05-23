@@ -42,6 +42,8 @@ Route::middleware('auth:api')->group(function() {
 
 Route::get('/dashboardNumbers/{idUser}', [DashboardController::class, 'getDashboardStats']);
 Route::resource('client',ClientController::class);
+Route::post('client/{idClient}' ,[ClientController::class, 'update']);
+
 Route::post('client/disactivate/{idClient}', [ClientController::class, 'stopClientSub']);
 Route::post('client/activate/{idClient}', [ClientController::class, 'activeClientSub']);
 Route::get('client/bygym/{idUser}', [ClientController::class, 'getClientsByGym']);
