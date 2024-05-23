@@ -14,26 +14,33 @@ class ClientController extends Controller
                      ->orderBy('end_date', 'desc')
                      ->get();
     }
-
     public function store(Request $request)
 {
     $request->validate([
         'first_name' => 'required',
-        'date_birth' => 'required',
+        'date_birth' => 'required|date',
         'phone_number' => 'required',
-        'end_date' => 'required',
-        'picture_file' => 'sometimes|required',
-        'id_user' => 'sometimes|required'
+        'end_date' => 'required|date',
+        'picture_file' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        'id_user' => 'required'
     ]);
 
     $user = User::findOrFail($request->id_user);
     $gym = $user->gym;
+    $pictureFileName;
+    // Handle file upload if it exists
+    if ($request->hasFile('picture_file')) {
+        $pictureFileName = $request->file('picture_file')->getClientOriginalName();
+        $picturePath = $request->file('picture_file')->storeAs('client_pictures', $pictureFileName, 'public');
+    }
 
     // Modify the request data
     $requestData = $request->all();
+    $requestData['picture_file'] = "http://127.0.0.1:8000/storage/client_pictures/" . $pictureFileName;
+
     $requestData['id_gym'] = $gym->id;
     unset($requestData['id_user']);
-
+    
     Client::create($requestData);
 
     return response()->json([
@@ -42,31 +49,34 @@ class ClientController extends Controller
 }
 
 
-    public function update(Request $request, Client $client)
-    {
-        $request->validate([
-            'first_name'=>'required',
-         
-            'date_birth'=>'required',
-            'phone_number'=>'required',
-            'end_date'=>'required',
-            'picture_file'=>'sometimes|required',
-            'id_gym'=>'sometimes|required'
 
-            
+public function update(Request $request, $id)
+{
+    $request->validate([
+        'first_name' => 'required',
+        'date_birth' => 'required',
+        'phone_number' => 'required',
+        'end_date' => 'required',
+        'picture_file' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+    ]);
 
+    $client = Client::find($id);
 
-        ]);
-
- 
-
-        $client->fill($request->post())->update();
-
-
-        return response()->json([
-            'message' => 'Client updated successfully'
-        ]);
+    // Handle file upload if it exists
+    if ($request->hasFile('picture_file')) {
+        $pictureFileName = $client->picture_file;
+        $picturePath = $request->file('picture_file')->storeAs('client_pictures', $pictureFileName, 'public');
+        $client->picture_file = "http://127.0.0.1:8000/storage/client_pictures/" . $pictureFileName;
     }
+
+    // Update other fields
+    $client->fill($request->post())->update();
+
+    return response()->json([
+        'message' => 'Client updated successfully'
+    ]);
+}
+
     public function destroy(Client $client)
         {
         $client->delete();

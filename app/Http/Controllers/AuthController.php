@@ -9,6 +9,8 @@ use App\Http\Controllers\Controller;
  
 use App\Models\User;
 use JWTAuth;
+use Carbon\Carbon;
+
 
 use Validator ;
 class AuthController extends Controller
@@ -101,6 +103,8 @@ public function login(Request $request)
     // if attempt failed then "unauthenticated" will be returned automatically
     if ($token)
     {
+        $expirationTime = Carbon::now()->addDays(20)->timestamp;
+
         return response()->json([
             'meta' => [
                 'code' => 200,
@@ -112,7 +116,7 @@ public function login(Request $request)
                 'access_token' => [
                     'token' => $token,
                     'type' => 'Bearer',
-                    'expires_in' => auth()->factory()->getTTL() * 60,
+                    'expires_in' =>$expirationTime,
                 ],
             ],
         ]);
