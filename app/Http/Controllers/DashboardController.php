@@ -8,12 +8,20 @@ use App\Models\User; // Import the User model
 
 class DashboardController extends Controller
 {
-    
     public function getTimeClients($gym)
-    {        if ($gym) { $now = Carbon::now();
-            $startOfWeek = $now->startOfWeek();
+    {
+        if ($gym) {
+            // Add debug logging
+            \Log::info('Fetching current date and time');
+            
+            $now = Carbon::now();
+            \Log::info('Current date and time: ' . $now->toDateTimeString());
     
-            $startOfMonth = $now->startOfMonth();
+            $startOfWeek = Carbon::now()->startOfWeek();
+            \Log::info('Start of the week: ' . $startOfWeek->toDateTimeString());
+    
+            $startOfMonth = Carbon::now()->startOfMonth();
+            \Log::info('Start of the month: ' . $startOfMonth->toDateTimeString());
     
             $counts = $gym->clients()
                 ->selectRaw('
@@ -29,13 +37,15 @@ class DashboardController extends Controller
                 'dayClients' => $counts->day,
                 'weekClients' => $counts->week,
                 'monthClients' => $counts->month,
-                'unactiveClients' => $gym->clients()->whereDate('end_date', '<', $now)->count()
+                'unactiveClients' => $gym->clients()->whereDate('end_date', '<', $now)->count(),
+                'nowDte' => $now->toDateTimeString(), // Ensure correct format
             ];
-            
+    
         } else {
             return 0;
         }
     }
+    
     public function getTimeMoney($gym)
     {
        

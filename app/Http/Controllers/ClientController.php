@@ -66,8 +66,9 @@ public function update(Request $request, $id)
     if ($request->hasFile('picture_file')) {
         $pictureFileName = $request->file('picture_file')->getClientOriginalName();
         $picturePath = $request->file('picture_file')->storeAs('client_pictures', $pictureFileName, 'public');
+        $request['picture_file'] = "http://127.0.0.1:8000/storage/client_pictures/" . $pictureFileName;
+
     }
-    $request['picture_file'] = "http://127.0.0.1:8000/storage/client_pictures/" . $pictureFileName;
 
 
     // Update other fields
