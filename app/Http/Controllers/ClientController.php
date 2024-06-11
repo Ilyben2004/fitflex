@@ -27,7 +27,7 @@ class ClientController extends Controller
 
     $user = User::findOrFail($request->id_user);
     $gym = $user->gym;
-    $pictureFileName;
+    $pictureFileName="default.jpg";
     // Handle file upload if it exists
     if ($request->hasFile('picture_file')) {
         $pictureFileName = $request->file('picture_file')->getClientOriginalName();

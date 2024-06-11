@@ -37,7 +37,10 @@ class DashboardController extends Controller
                 'dayClients' => $counts->day,
                 'weekClients' => $counts->week,
                 'monthClients' => $counts->month,
-                'unactiveClients' => $gym->clients()->whereDate('end_date', '<', $now)->count(),
+                'unactiveClients' => $gym->clients()
+                ->where('active', '!=', 0)
+                ->whereDate('end_date', '<', $now)
+                ->count(),
                 'nowDte' => $now->toDateTimeString(), // Ensure correct format
             ];
     
