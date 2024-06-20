@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Client;
 use App\Models\User; 
+use App\Models\Payment; 
+
 
 class ClientController extends Controller
 {
@@ -15,39 +17,49 @@ class ClientController extends Controller
                      ->get();
     }
     public function store(Request $request)
-{
-    $request->validate([
-        'first_name' => 'required',
-        'date_birth' => 'required|date',
-        'phone_number' => 'required',
-        'end_date' => 'required|date',
-        'picture_file' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        'id_user' => 'required'
-    ]);
-
-    $user = User::findOrFail($request->id_user);
-    $gym = $user->gym;
-    $pictureFileName="default.jpg";
-    // Handle file upload if it exists
-    if ($request->hasFile('picture_file')) {
-        $pictureFileName = $request->file('picture_file')->getClientOriginalName();
-        $picturePath = $request->file('picture_file')->storeAs('client_pictures', $pictureFileName, 'public');
-    }
-
-    // Modify the request data
-    $requestData = $request->all();
-    $requestData['picture_file'] = "http://127.0.0.1:8000/storage/client_pictures/" . $pictureFileName;
-
-    $requestData['id_gym'] = $gym->id;
-    unset($requestData['id_user']);
+    {
+        $request->validate([
+            'first_name' => 'required',
+            'date_birth' => 'required|date',
+            'phone_number' => 'required',
+            'end_date' => 'required|date',
+            'picture_file' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'paid_price' => 'sometimes|numeric',
+            'id_user' => 'required|exists:users,id'
+        ]);
     
-    Client::create($requestData);
-
-    return response()->json([
-        'message' => 'Client added successfully'
-    ]);
-}
-
+        $user = User::findOrFail($request->id_user);
+        $gym = $user->gym;
+        $pictureFileName = "default.jpg";
+    
+        // Handle file upload if it exists
+        if ($request->hasFile('picture_file')) {
+            $pictureFileName = $request->file('picture_file')->getClientOriginalName();
+            $picturePath = $request->file('picture_file')->storeAs('client_pictures', $pictureFileName, 'public');
+        }
+    
+        // Modify the request data
+        $requestData = $request->all();
+        $requestData['picture_file'] = "http://127.0.0.1:8000/storage/client_pictures/" . $pictureFileName;
+        $requestData['id_gym'] = $gym->id;
+        unset($requestData['id_user']);
+        
+        // Create the client
+        $client = Client::create($requestData);
+    
+        // Check if subscription_amount exists and add payment
+        if ($request->filled('paid_price')) {
+            Payment::create([
+                'id_user' => $client->id,
+                'paid_price' => $requestData['paid_price']
+            ]);
+        }
+    
+        return response()->json([
+            'message' => 'Client added successfully'
+        ]);
+    }
+    
 
 
 public function update(Request $request, $id)
